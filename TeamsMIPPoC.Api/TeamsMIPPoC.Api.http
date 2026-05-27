@@ -1,0 +1,6 @@
+@TeamsMIPPoC.Api_HostAddress = http://localhost:5251
+
+GET {{TeamsMIPPoC.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

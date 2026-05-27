@@ -24,6 +24,11 @@ app.MapPost("/api/sensitivity-label", (LabelLookupRequest request, IMipLabelServ
         return Results.BadRequest(new { error = "The fileUrl must be a valid absolute URL." });
     }
 
+    if (!string.Equals(fileUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.BadRequest(new { error = "The fileUrl must use HTTPS." });
+    }
+
     var lookup = mipLabelService.GetSensitivityLabel(fileUri);
     return lookup is null
         ? Results.BadRequest(new { error = "Only SharePoint Online and OneDrive for Business URLs are supported." })
@@ -33,3 +38,5 @@ app.MapPost("/api/sensitivity-label", (LabelLookupRequest request, IMipLabelServ
 .WithOpenApi();
 
 app.Run();
+
+public partial class Program;

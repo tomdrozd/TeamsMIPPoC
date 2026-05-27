@@ -34,6 +34,8 @@ Example response:
 
 ## Run locally
 
+Prerequisite: install the .NET 10 SDK (`net10.0`) before running or testing this project.
+
 ```bash
 dotnet run --project TeamsMIPPoC.Api
 ```
@@ -55,3 +57,5 @@ dotnet test TeamsMIPPoC.slnx
 7. In Teams, send or paste a SharePoint Online (SPO) or OneDrive for Business (ODfB) file URL through your bot flow and call `POST /api/sensitivity-label` to return the sensitivity label payload.
 
 > Note: This repository currently provides the backend label-lookup API PoC. A complete Teams app also requires bot message handling, app manifest metadata, and Azure Bot registration wiring.
+>
+> Security warning: this PoC API does not implement authentication/authorization. Do not expose it publicly unless you add protections such as Microsoft Entra ID auth, an API key, and/or IP restrictions.

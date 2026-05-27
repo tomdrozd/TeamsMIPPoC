@@ -43,3 +43,15 @@ dotnet run --project TeamsMIPPoC.Api
 ```bash
 dotnet test TeamsMIPPoC.slnx
 ```
+
+## Deploy to a Microsoft 365 Developer tenant (Teams)
+
+1. Create or use an existing Microsoft 365 Developer tenant (https://developer.microsoft.com/microsoft-365/dev-program).
+2. Expose the local API publicly (for example with dev tunnels or ngrok) and note the HTTPS base URL.
+3. In the Teams Developer Portal (https://dev.teams.microsoft.com), create a new Teams app.
+4. Add a bot capability to the app and set the bot messaging endpoint to your hosted API endpoint (for example `https://<public-host>/api/messages` if you add bot message handling, and use `POST /api/sensitivity-label` from your bot logic).
+5. In **App package**, define valid domains for your API host and required permissions/scopes.
+6. Install the app to your developer tenant and Teams client from Developer Portal (**Test and distribute** -> **Install**).
+7. In Teams, send or paste a SPO/ODfB file URL through your bot flow and call `POST /api/sensitivity-label` to return the sensitivity label payload.
+
+> Note: This repository currently provides the backend label-lookup API PoC. A complete Teams app also requires bot message handling, app manifest metadata, and Azure Bot registration wiring.

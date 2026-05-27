@@ -29,6 +29,7 @@ app.MapPost("/api/sensitivity-label", (LabelLookupRequest request, IMipLabelServ
         ? Results.BadRequest(new { error = "Only SharePoint Online and OneDrive for Business URLs are supported." })
         : Results.Ok(lookup);
 })
-.WithName("GetSensitivityLabel");
+.WithName("GetSensitivityLabel")
+.WithOpenApi();
 
 app.Run();

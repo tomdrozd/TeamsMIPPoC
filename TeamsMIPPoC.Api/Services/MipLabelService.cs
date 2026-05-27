@@ -34,7 +34,6 @@ public sealed class MipLabelService : IMipLabelService
         }
 
         var host = fileUri.Host;
-        return host.EndsWith(".sharepoint.com", StringComparison.OrdinalIgnoreCase)
-            || host.EndsWith("-my.sharepoint.com", StringComparison.OrdinalIgnoreCase);
+        return host.EndsWith(".sharepoint.com", StringComparison.OrdinalIgnoreCase);
     }
 }

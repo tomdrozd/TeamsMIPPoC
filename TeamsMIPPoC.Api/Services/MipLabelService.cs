@@ -28,6 +28,11 @@ public sealed class MipLabelService : IMipLabelService
 
     private static bool IsSupportedBusinessUrl(Uri fileUri)
     {
+        if (!fileUri.IsAbsoluteUri)
+        {
+            return false;
+        }
+
         if (!string.Equals(fileUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
             return false;

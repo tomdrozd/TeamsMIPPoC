@@ -35,6 +35,19 @@ public class SensitivityLabelEndpointTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
+    public async Task Post_ReturnsBadRequest_ForUnsupportedHost()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/sensitivity-label",
+            new { fileUrl = "https://example.com/files/doc.docx" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(
+            "Only SharePoint Online and OneDrive for Business URLs are supported.",
+            await GetErrorMessageAsync(response));
+    }
+
+    [Fact]
     public async Task Post_ReturnsExpectedPayload_ForSupportedUrl()
     {
         var response = await _client.PostAsJsonAsync(

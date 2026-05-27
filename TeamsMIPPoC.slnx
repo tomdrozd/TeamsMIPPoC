@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TeamsMIPPoC.Api.Tests/TeamsMIPPoC.Api.Tests.csproj" />
+  <Project Path="TeamsMIPPoC.Api/TeamsMIPPoC.Api.csproj" />
+</Solution>

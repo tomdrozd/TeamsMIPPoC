@@ -1,0 +1,11 @@
+@TeamsMIPPoC.Api_HostAddress = https://localhost:7244
+
+POST {{TeamsMIPPoC.Api_HostAddress}}/api/sensitivity-label
+Accept: application/json
+Content-Type: application/json
+
+{
+  "fileUrl": "https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx"
+}
+
+###

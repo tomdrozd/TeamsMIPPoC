@@ -35,11 +35,11 @@ Example response:
 ## Run locally
 
 ```bash
-dotnet run --project /tmp/workspace/tomdrozd/TeamsMIPPoC/TeamsMIPPoC.Api
+dotnet run --project TeamsMIPPoC.Api
 ```
 
 ## Test
 
 ```bash
-dotnet test /tmp/workspace/tomdrozd/TeamsMIPPoC/TeamsMIPPoC.slnx
+dotnet test TeamsMIPPoC.slnx
 ```

@@ -1,6 +1,11 @@
 @TeamsMIPPoC.Api_HostAddress = http://localhost:5251
 
-GET {{TeamsMIPPoC.Api_HostAddress}}/weatherforecast/
+POST {{TeamsMIPPoC.Api_HostAddress}}/api/sensitivity-label
 Accept: application/json
+Content-Type: application/json
+
+{
+  "fileUrl": "https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx"
+}
 
 ###

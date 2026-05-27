@@ -33,13 +33,13 @@ public sealed class MipLabelService : IMipLabelService
             return false;
         }
 
-        var host = fileUri.Host.ToLowerInvariant();
-        if (!host.Contains("sharepoint.com", StringComparison.Ordinal))
+        var host = fileUri.Host;
+        if (!host.Contains("sharepoint.com", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
-        return host.EndsWith(".sharepoint.com", StringComparison.Ordinal)
-            || host.EndsWith("-my.sharepoint.com", StringComparison.Ordinal);
+        return host.EndsWith(".sharepoint.com", StringComparison.OrdinalIgnoreCase)
+            || host.EndsWith("-my.sharepoint.com", StringComparison.OrdinalIgnoreCase);
     }
 }

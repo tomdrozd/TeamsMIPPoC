@@ -4,5 +4,5 @@ namespace TeamsMIPPoC.Api.Services;
 
 public interface IMipLabelService
 {
-    LabelLookupResponse? GetSensitivityLabel(Uri fileUri);
+    Task<LabelLookupResult> GetSensitivityLabelAsync(Uri fileUri, CancellationToken cancellationToken = default);
 }

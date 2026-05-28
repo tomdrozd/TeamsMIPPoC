@@ -1,31 +1,107 @@
-﻿using TeamsMIPPoC.Api.Services;
+using System.Net;
+using System.Net.Http.Json;
+using TeamsMIPPoC.Api.Models;
+using TeamsMIPPoC.Api.Services;
 
 namespace TeamsMIPPoC.Api.Tests;
 
 public class MipLabelServiceTests
 {
-    private readonly MipLabelService _service = new();
-
-    [Theory]
-    [InlineData("https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx", "Confidential")]
-    [InlineData("https://contoso-my.sharepoint.com/personal/user_contoso_com/Documents/report.pdf", "General")]
-    [InlineData("https://contoso.sharepoint.com/sites/hr/Shared%20Documents/readme.txt", "Public")]
-    public void GetSensitivityLabel_ReturnsExpectedLabel_ForSupportedLinks(string url, string expectedLabel)
+    private static readonly MipIntegrationOptions Options = new()
     {
-        var result = _service.GetSensitivityLabel(new Uri(url));
+        ServiceBaseUrl = "https://mip.example",
+        LabelLookupPath = "/labels/lookup",
+        Scope = "api://mip/.default",
+        TenantId = "tenant",
+        ClientId = "client",
+        ClientSecret = "secret"
+    };
 
-        Assert.NotNull(result);
-        Assert.Equal(expectedLabel, result.SensitivityLabel);
-        Assert.Equal("MIP SDK PoC", result.Source);
+    [Fact]
+    public async Task GetSensitivityLabelAsync_ReturnsSupportedResult_FromMipService()
+    {
+        var service = new MipLabelService(
+            new HttpClient(new StubHttpMessageHandler(_ =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(new
+                    {
+                        sensitivityLabel = "Confidential",
+                        source = "MIP SDK",
+                        evidence = "Policy resolved for file."
+                    })
+                };
+                return response;
+            })),
+            new StaticAccessTokenProvider("token"),
+            Options);
+
+        var result = await service.GetSensitivityLabelAsync(
+            new Uri("https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Confidential", result.Response!.SensitivityLabel);
+        Assert.Equal("MIP SDK", result.Response.Source);
     }
 
     [Theory]
     [InlineData("https://contoso.com/doc.docx")]
     [InlineData("http://contoso.sharepoint.com/sites/legal/doc.docx")]
-    public void GetSensitivityLabel_ReturnsNull_ForUnsupportedLinks(string url)
+    public async Task GetSensitivityLabelAsync_ReturnsUnsupportedUrl_ForInvalidInput(string url)
     {
-        var result = _service.GetSensitivityLabel(new Uri(url));
+        var service = new MipLabelService(
+            new HttpClient(new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK))),
+            new StaticAccessTokenProvider("token"),
+            Options);
 
-        Assert.Null(result);
+        var result = await service.GetSensitivityLabelAsync(new Uri(url));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(LabelLookupFailureReason.UnsupportedUrl, result.FailureReason);
+    }
+
+    [Fact]
+    public async Task GetSensitivityLabelAsync_ReturnsAuthenticationFailure_WhenUpstreamUnauthorized()
+    {
+        var service = new MipLabelService(
+            new HttpClient(new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized))),
+            new StaticAccessTokenProvider("token"),
+            Options);
+
+        var result = await service.GetSensitivityLabelAsync(
+            new Uri("https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(LabelLookupFailureReason.AuthenticationFailure, result.FailureReason);
+    }
+
+    [Fact]
+    public async Task GetSensitivityLabelAsync_ReturnsPolicyUnavailable_WhenUpstreamFails()
+    {
+        var service = new MipLabelService(
+            new HttpClient(new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable))),
+            new StaticAccessTokenProvider("token"),
+            Options);
+
+        var result = await service.GetSensitivityLabelAsync(
+            new Uri("https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(LabelLookupFailureReason.PolicyUnavailable, result.FailureReason);
+    }
+
+    private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
+    {
+        public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default) => Task.FromResult(token);
+    }
+
+    private sealed class StubHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> responder)
+        : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => Task.FromResult(responder(request));
     }
 }

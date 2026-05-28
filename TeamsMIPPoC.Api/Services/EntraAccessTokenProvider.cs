@@ -11,6 +11,15 @@ public sealed class EntraAccessTokenProvider : IAccessTokenProvider
 
     public EntraAccessTokenProvider(MipIntegrationOptions options)
     {
+        if (string.IsNullOrWhiteSpace(options.TenantId) ||
+            string.IsNullOrWhiteSpace(options.ClientId) ||
+            string.IsNullOrWhiteSpace(options.ClientSecret) ||
+            string.IsNullOrWhiteSpace(options.Scope))
+        {
+            throw new InvalidOperationException(
+                "MipIntegration requires TenantId, ClientId, ClientSecret, and Scope.");
+        }
+
         _credential = new ClientSecretCredential(options.TenantId, options.ClientId, options.ClientSecret);
         _scopes = [options.Scope];
     }

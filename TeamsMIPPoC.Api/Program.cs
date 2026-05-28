@@ -1,5 +1,5 @@
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using TeamsMIPPoC.Api;
 using TeamsMIPPoC.Api.Models;
 using TeamsMIPPoC.Api.Services;
 
@@ -9,6 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 var mipOptions = builder.Configuration.GetSection(MipIntegrationOptions.SectionName).Get<MipIntegrationOptions>()
     ?? new MipIntegrationOptions();
+if (string.IsNullOrWhiteSpace(mipOptions.ServiceBaseUrl) ||
+    string.IsNullOrWhiteSpace(mipOptions.LabelLookupPath) ||
+    string.IsNullOrWhiteSpace(mipOptions.Scope) ||
+    string.IsNullOrWhiteSpace(mipOptions.TenantId) ||
+    string.IsNullOrWhiteSpace(mipOptions.ClientId) ||
+    string.IsNullOrWhiteSpace(mipOptions.ClientSecret))
+{
+    throw new InvalidOperationException(
+        "MipIntegration must define ServiceBaseUrl, LabelLookupPath, Scope, TenantId, ClientId, and ClientSecret.");
+}
+
 builder.Services.AddSingleton(mipOptions);
 builder.Services.AddSingleton<IAccessTokenProvider, EntraAccessTokenProvider>();
 builder.Services.AddHttpClient<IMipLabelService, MipLabelService>();
@@ -93,7 +104,7 @@ var teamsMessageRoute = app.MapPost("/api/messages", async (
     IMipLabelService mipLabelService,
     CancellationToken cancellationToken) =>
 {
-    var fileUrl = ExtractFirstUrl(request.Text);
+    var fileUrl = UrlExtractor.ExtractFirstHttpsUrl(request.Text);
     if (fileUrl is null)
     {
         return Results.BadRequest(new TeamsMessageResponse("Please paste an HTTPS SharePoint or OneDrive file URL."));
@@ -135,16 +146,5 @@ if (authOptions.Enabled)
 }
 
 app.Run();
-
-static string? ExtractFirstUrl(string? text)
-{
-    if (string.IsNullOrWhiteSpace(text))
-    {
-        return null;
-    }
-
-    var match = Regex.Match(text, @"https://\S+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    return match.Success ? match.Value.TrimEnd('.', ',', ';', ':', ')', ']', '}') : null;
-}
 
 public partial class Program;

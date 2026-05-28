@@ -80,6 +80,20 @@ public class SensitivityLabelEndpointTests : IClassFixture<SensitivityLabelEndpo
         Assert.Contains("Sensitivity label: Confidential", payload.Reply);
     }
 
+    [Fact]
+    public async Task Messages_ParsesUrl_WithTrailingPunctuation()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/messages",
+            new { text = "check this: https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx." });
+
+        response.EnsureSuccessStatusCode();
+        var payload = await response.Content.ReadFromJsonAsync<TeamsMessageResponse>();
+
+        Assert.NotNull(payload);
+        Assert.Contains("Sensitivity label: Confidential", payload.Reply);
+    }
+
     private static async Task<string?> GetErrorMessageAsync(HttpResponseMessage response)
     {
         var payload = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();

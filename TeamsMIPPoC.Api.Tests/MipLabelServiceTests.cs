@@ -91,6 +91,29 @@ public class MipLabelServiceTests
         Assert.Equal(LabelLookupFailureReason.PolicyUnavailable, result.FailureReason);
     }
 
+    [Fact]
+    public async Task GetSensitivityLabelAsync_ReturnsPolicyUnavailable_WhenLabelIsEmpty()
+    {
+        var service = new MipLabelService(
+            new HttpClient(new StubHttpMessageHandler(_ =>
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(new
+                    {
+                        sensitivityLabel = "   ",
+                        source = "MIP SDK"
+                    })
+                })),
+            new StaticAccessTokenProvider("token"),
+            Options);
+
+        var result = await service.GetSensitivityLabelAsync(
+            new Uri("https://contoso.sharepoint.com/sites/legal/Shared%20Documents/contract.docx"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(LabelLookupFailureReason.PolicyUnavailable, result.FailureReason);
+    }
+
     private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
     {
         public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default) => Task.FromResult(token);
